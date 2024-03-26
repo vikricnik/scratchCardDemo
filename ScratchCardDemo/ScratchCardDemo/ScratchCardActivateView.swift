@@ -30,12 +30,15 @@ struct ScratchCardActivateView: View {
             }
         }
         .alert(isPresented: $viewModel.error) {
-            Alert(title: Text("Important message"), message: Text("ERROR"), dismissButton: .default(Text("Got it!")))
+            Alert(title: Text("Important message"), 
+                  message: Text("ERROR"),
+                  dismissButton: .default(Text("Got it!")))
         }
     }
 
 }
 
+@MainActor
 class ScratchCardActivateViewModel: ObservableObject {
 
     @Published var loading = false
@@ -46,8 +49,7 @@ class ScratchCardActivateViewModel: ObservableObject {
         guard card.uuid != "" else { return }
 
         loading = true
-        var req = URLRequest(url: URL(string: "https://api.o2.sk/versions?code=\(card.uuid)")!)
-        req.httpMethod = "GET"
+        var req = URLRequest(card: card)
 
         let queue = DispatchSerialQueue(label: "request_task")
 
@@ -62,11 +64,10 @@ class ScratchCardActivateViewModel: ObservableObject {
                 return try JSONSerialization.jsonObject(with: data.data)
             }
             .receive(on: DispatchSerialQueue.main)
-            .receive(subscriber: Subscribers.Sink(receiveCompletion: { _ in
-
-            }, receiveValue: { [weak self] (dict: Any) in
+            .receive(subscriber: Subscribers.Sink(receiveCompletion: { _ in },
+                                                  receiveValue: { [weak self] (dict: Any) in
                 self?.loading = false
-
+                
                 guard let dict = dict as? NSDictionary else { 
                     self?.error = true
                     return
@@ -75,10 +76,51 @@ class ScratchCardActivateViewModel: ObservableObject {
                 ios.flatMap { val in
                     card.ios = Double(val)
                 }
-
+                
                 if !card.isActivated {
                     self?.error = true
                 }
             }))
     }
+
+    func activate(card: ScratchCard) async throws {
+        guard card.uuid != "" else { return }
+
+        loading = true
+
+        var req = URLRequest(card: card)
+        let data = try await URLSession.shared.data(for: req)
+
+        guard let httpResponse = data.1 as? HTTPURLResponse, httpResponse.statusCode >= 200
+        else { throw URLError(.badServerResponse) }
+
+        let dict = try JSONSerialization.jsonObject(with: data.0)
+
+        self.loading = false
+
+        guard let dict = dict as? NSDictionary else {
+            error = true
+            return
+        }
+        let ios = dict["ios"] as? String
+        ios.flatMap { val in
+            card.ios = Double(val)
+        }
+
+        if !card.isActivated {
+            error = true
+        }
+
+    }
 }
+
+private extension URLRequest {
+
+    init(card: ScratchCard) {
+        self.init(url: URL(string: "https://api.o2.sk/versions?code=\(card.uuid)")!)
+        self.httpMethod = "GET"
+    }
+    
+}
+
+

@@ -106,12 +106,12 @@
 			children = (
 				9965D0E22BB18FBB00E2D42B /* ScratchCardDemoApp.swift */,
 				9965D0E42BB18FBB00E2D42B /* ContentView.swift */,
+				9965D10F2BB199E400E2D42B /* ScratchDetailView.swift */,
+				9965D1112BB1AA8D00E2D42B /* ScratchCardActivateView.swift */,
 				9965D0E62BB18FBB00E2D42B /* ScratchCard.swift */,
 				9965D0E82BB18FC000E2D42B /* Assets.xcassets */,
 				9965D0EA2BB18FC000E2D42B /* ScratchCardDemo.entitlements */,
 				9965D0EB2BB18FC000E2D42B /* Preview Content */,
-				9965D10F2BB199E400E2D42B /* ScratchDetailView.swift */,
-				9965D1112BB1AA8D00E2D42B /* ScratchCardActivateView.swift */,
 			);
 			path = ScratchCardDemo;
 			sourceTree = "<group>";

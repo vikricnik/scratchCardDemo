@@ -128,6 +128,24 @@ final class ScratchCardDemoTests: XCTestCase {
         wait(for: [expectation], timeout: 4.0)
     }
 
+    @MainActor
+    func testAsyncAwaitFinish() async throws {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: ScratchCard.self, configurations: config)
+
+        container.mainContext.insert(ScratchCard(scratched: false, uuid: ""))
+
+        let model = try container.mainContext.fetch(FetchDescriptor<ScratchCard>()).first!
+
+        model.uuid = "1234"
+        model.scratched = true
+        let vm = ScratchCardActivateViewModel()
+
+        try await vm.activate(card: model)
+
+        XCTAssertEqual(model.isActivated, true)
+    }
+
     func testPerformanceExample() throws {
         // This is an example of a performance test case.
         measure {

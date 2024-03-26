@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+
     @Environment(\.modelContext) private var modelContext
     @Query private var cards: [ScratchCard]
 
@@ -76,7 +77,6 @@ struct ContentView: View {
             } label: {
                 Text("Start")
             }
-
         }
     }
 
@@ -84,7 +84,8 @@ struct ContentView: View {
         ZStack {
             VStack {
                 cards.first.flatMap { card in
-                    Text(card.scratched == false ? "#####" 
+                    Text(card.scratched == false 
+                         ? "#####"
                          : card.isActivated ? "ACTIVATED!" : "Your card number is:\n\(card.uuid)")
                         .multilineTextAlignment(.center)
                 }
